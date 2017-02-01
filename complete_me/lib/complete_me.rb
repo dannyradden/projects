@@ -2,27 +2,22 @@ require 'pry'
 
 class CompleteMe
 
-  attr_accessor :root_node, :counter
+  attr_reader :root_node
 
   def initialize
     @root_node = Node.new('')
-    $counter = counter = 0
-    $suggestions = suggestions = ""
-    $word_temp = ""
+    $counter = 0
+    $suggestions = ''
   end
 
   def insert word
-    #binding.pry
-    $word_temp = ""
     first_letter = word[0]
     remainder = word[1..-1]
 
     if root_node.children[first_letter] == nil
       root_node.children[first_letter] = Node.new(first_letter)
-      root_node.children[first_letter].insert_node(remainder)
-    else
-      root_node.children[first_letter].insert_node(remainder)
     end
+    root_node.children[first_letter].insert_node(remainder)
   end
 
   def count
@@ -34,9 +29,9 @@ class CompleteMe
   end
 
   def insert_words words
-      words.each do |word|
-        insert word
-      end
+    words.each do |word|
+      insert word
+    end
   end
 
   def populate(file_contents)
@@ -44,12 +39,11 @@ class CompleteMe
   end
 
   def suggest subscript
-    #binding.pry
     first_letter = subscript[0]
     remainder = subscript[1..-1]
 
     if root_node.children[first_letter] == nil
-      puts "No word in this dictionary starts with the given subscript."
+      puts 'No word in this dictionary starts with the given subscript.'
     else
       root_node.children[first_letter].suggest_node(remainder)
     end
@@ -58,55 +52,49 @@ class CompleteMe
 end
 
 
-class Node
+class Node < CompleteMe
 
-  attr_accessor :word, :children, :terminate, :node_word, :letter
+  attr_reader :children, :terminate, :node_word
 
-  def initialize(letter) #h
+  def initialize(node_word)
     @terminate = false
     @children = {}
-    @letter = letter
-    @node_word = node_word = ""
+    @node_word = node_word
   end
 
-  def insert_node word  # ey
-    @node_word = $word_temp + letter
-    $word_temp = @node_word
-    if word.length != 0
-      first_letter = word[0]  #y
-      remainder = word[1..-1] #""
+  def insert_node rest_of_word
+    if rest_of_word.length != 0
+      first_letter = rest_of_word[0]
+      remainder = rest_of_word[1..-1]
       if children[first_letter] == nil
-        children[first_letter] = Node.new(first_letter)
-        children[first_letter].insert_node(remainder)
-      else
-        children[first_letter].insert_node(remainder)
+        children[first_letter] = Node.new(node_word + first_letter)
       end
+        children[first_letter].insert_node(remainder)
     else
       @terminate = true
     end
   end
 
-  def suggest_node(word)
-    if word.length != 0
-      first_letter = word[0]  #t
-      remainder = word[1..-1] #""
+  def suggest_node(rest_of_word)
+    if rest_of_word.length != 0
+      first_letter = rest_of_word[0]
+      remainder = rest_of_word[1..-1]
       if children[first_letter] == nil
-        puts "No word in this dictionary starts with the given subscript."
+        puts 'No word in this dictionary starts with the given subscript.'
       else
         children[first_letter].suggest_node(remainder)
       end
     else
-      add_words
+      add_words_to_sugg
     end
   end
 
-  def  add_words
-    #binding.pry
+  def add_words_to_sugg
     children.each do |key, value|
       if value.terminate == true && value != nil
-        $suggestions += value.node_word + " "
+        $suggestions += value.node_word + ' '
       end
-      value.add_words
+      value.add_words_to_sugg
     end
   end
 
@@ -116,20 +104,15 @@ class Node
       value.count_node
     end
   end
-
 end
 
 
 
 cm = CompleteMe.new
-#binding.pry
 #cm.insert_words(['hey', 'apple', 'help'])
-#cm.insert_words ['a', 'banana', 'hey', 'hello']
+#cm.insert_words ['a', 'Banana', 'hey', 'hello']
 #cm.populate(File.read("./lib/medium.txt"))
-cm.populate(File.read("/usr/share/dict/words"))
-#binding.pry
+cm.populate(File.read('/usr/share/dict/words'))
 cm.suggest gets.chomp
 puts "\n"
 puts "Words in dictionary:#{cm.count}"
-#binding.pry
-puts ""
